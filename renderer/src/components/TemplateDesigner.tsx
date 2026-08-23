@@ -8,9 +8,10 @@ interface Props {
   croppedImage: string | null;
   ocrData: any;
   onBack: () => void;
+  onAddToQueue: (htmlPayload: string) => void;
 }
 
-export default function TemplateDesigner({ croppedImage, ocrData, onBack }: Props) {
+export default function TemplateDesigner({ croppedImage, ocrData, onBack, onAddToQueue }: Props) {
   const [template, setTemplate] = useState<CardTemplate>(aadhaarTemplate as CardTemplate);
   const [fields, setFields] = useState<any>({});
   
@@ -32,6 +33,61 @@ export default function TemplateDesigner({ croppedImage, ocrData, onBack }: Prop
   const handleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (e.target.value === 'aadhaar') setTemplate(aadhaarTemplate as CardTemplate);
     if (e.target.value === 'pan') setTemplate(panTemplate as CardTemplate);
+  };
+
+  const generateHtmlPayload = () => {
+    // Generate HTML for Front and Back side
+    // We use page-break-after: always to tell Electron to split into two pages for dual-sided PVC printers
+    
+    const generateSideHtml = (isBack = false) => {
+      let html = `<div style="position: relative; width: ${template.width}px; height: ${template.height}px; background-color: #ffffff; overflow: hidden; page-break-after: always;">`;
+      
+      // Inject text fields
+      template.textFields.forEach(tf => {
+        // Simple logic: if it's the back side, we would theoretically load a different template. 
+        // For this spike, we'll just render a placeholder back if no back template exists, or duplicate it.
+        if (!isBack) {
+          html += `<div style="position: absolute; left: ${tf.x}px; top: ${tf.y}px; font-size: ${tf.fontSize}px; font-family: ${tf.fontFamily}; color: ${tf.color}; font-weight: 600; white-space: nowrap;">`;
+          html += `${fields[tf.id] || tf.label}</div>`;
+        }
+      });
+
+      // Inject image fields
+      if (!isBack) {
+        template.imageFields.forEach(img => {
+          if (img.isCropBox && croppedImage) {
+            html += `<img src="${croppedImage}" style="position: absolute; left: ${img.x}px; top: ${img.y}px; width: ${img.width}px; height: ${img.height}px; object-fit: cover;" />`;
+          }
+        });
+      } else {
+         // Placeholder Back side content
+         html += `<div style="position: absolute; top: 45%; width: 100%; text-align: center; font-family: sans-serif; font-size: 30px;">(Back Side generated for Dual-Sided Print)</div>`;
+      }
+      
+      html += `</div>`;
+      return html;
+    };
+
+    const finalHtml = `
+      <html>
+        <head>
+          <style>
+            @page { margin: 0; size: ${template.width}px ${template.height}px; }
+            body { margin: 0; padding: 0; width: ${template.width}px; height: ${template.height}px; }
+          </style>
+        </head>
+        <body>
+          ${generateSideHtml(false)}
+          ${generateSideHtml(true)}
+        </body>
+      </html>
+    `;
+    return finalHtml;
+  };
+
+  const handleQueue = () => {
+    const html = generateHtmlPayload();
+    onAddToQueue(html);
   };
 
   // Scaling factor for preview (CR80 cards are ~1011px wide, preview at 60%)
@@ -73,8 +129,8 @@ export default function TemplateDesigner({ croppedImage, ocrData, onBack }: Prop
           <button className="btn-primary" style={{ background: 'transparent', border: '1px solid var(--surface-border)' }} onClick={onBack}>
             Back
           </button>
-          <button className="btn-primary">
-            <Printer size={18} /> Print Card
+          <button className="btn-primary" onClick={handleQueue}>
+            <Save size={18} style={{ marginRight: '8px' }}/> Add to Queue
           </button>
         </div>
       </div>

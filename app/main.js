@@ -1,6 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const { getPrinters, printCard } = require('./printer_service');
 
 let sidecarProcess = null;
 
@@ -56,6 +57,10 @@ function createWindow() {
   // mainWindow.loadFile(path.join(__dirname, '../renderer/dist/index.html'));
   
   mainWindow.webContents.openDevTools();
+
+  // Printer IPC Handlers
+  ipcMain.handle('get-printers', (event) => getPrinters(event));
+  ipcMain.handle('print-card', (event, args) => printCard(event, args));
 }
 
 app.whenReady().then(() => {

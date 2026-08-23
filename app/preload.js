@@ -1,5 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  // We will add IPC methods here later
+  checkSidecarHealth: () => ipcRenderer.invoke('check-sidecar-health'),
+  getPrinters: () => ipcRenderer.invoke('get-printers'),
+  printCard: (htmlContent, printerName) => ipcRenderer.invoke('print-card', { htmlContent, printerName })
 });

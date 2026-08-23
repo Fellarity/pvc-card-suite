@@ -2,6 +2,8 @@ import { useState, FormEvent } from 'react';
 import './index.css';
 import IngestionPipeline from './components/IngestionPipeline';
 import TemplateDesigner from './components/TemplateDesigner';
+import PrintQueue, { PrintJob } from './components/PrintQueue';
+import { LayoutDashboard, Printer as PrinterIcon, LogOut } from 'lucide-react';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -13,6 +15,22 @@ function App() {
   const [ingestionComplete, setIngestionComplete] = useState(false);
   const [finalImage, setFinalImage] = useState<string | null>(null);
   const [ocrData, setOcrData] = useState<any>(null);
+
+  // App State
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'queue'>('dashboard');
+  const [jobs, setJobs] = useState<PrintJob[]>([]);
+
+  const handleAddToQueue = (htmlPayload: string) => {
+    const newJob: PrintJob = {
+      id: `JOB-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
+      timestamp: Date.now(),
+      htmlPayload,
+      status: 'queued'
+    };
+    setJobs(prev => [...prev, newJob]);
+    setIngestionComplete(false); // Reset to allow next document
+    setActiveTab('queue'); // Auto-switch to queue to see it
+  };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -46,27 +64,66 @@ function App() {
 
   if (success) {
     return (
-      <div style={{ width: '100%', padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
-         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1200px', alignItems: 'center' }}>
-            <h1 style={{ fontSize: '24px' }}>PVC Card Suite Dashboard</h1>
-            <button className="btn-primary" style={{ width: 'auto', padding: '8px 16px' }} onClick={() => setSuccess(false)}>
-              Sign Out
+      <div style={{ width: '100vw', height: '100vh', display: 'flex' }}>
+        
+        {/* Sidebar */}
+        <div style={{ width: '250px', background: 'rgba(15, 23, 42, 0.8)', borderRight: '1px solid var(--surface-border)', padding: '30px 20px', display: 'flex', flexDirection: 'column' }}>
+          <h2 style={{ fontSize: '18px', marginBottom: '40px', color: 'var(--primary)', fontWeight: 'bold' }}>PVC Suite</h2>
+          
+          <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <button 
+              className="btn-primary" 
+              style={{ background: activeTab === 'dashboard' ? 'var(--primary)' : 'transparent', textAlign: 'left', justifyContent: 'flex-start' }}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              <LayoutDashboard size={18} style={{ marginRight: '10px' }}/> Dashboard
             </button>
-         </div>
-         
-         {!ingestionComplete ? (
-            <IngestionPipeline onComplete={(img, data) => {
-              setFinalImage(img);
-              setOcrData(data);
-              setIngestionComplete(true);
-            }} />
-         ) : (
-            <TemplateDesigner 
-              croppedImage={finalImage} 
-              ocrData={ocrData} 
-              onBack={() => setIngestionComplete(false)} 
-            />
-         )}
+            <button 
+              className="btn-primary" 
+              style={{ background: activeTab === 'queue' ? 'var(--primary)' : 'transparent', textAlign: 'left', justifyContent: 'flex-start' }}
+              onClick={() => setActiveTab('queue')}
+            >
+              <PrinterIcon size={18} style={{ marginRight: '10px' }}/> Print Queue 
+              {jobs.filter(j => j.status === 'queued').length > 0 && (
+                <span style={{ marginLeft: 'auto', background: 'var(--danger)', padding: '2px 8px', borderRadius: '12px', fontSize: '12px' }}>
+                  {jobs.filter(j => j.status === 'queued').length}
+                </span>
+              )}
+            </button>
+          </nav>
+
+          <button className="btn-primary" style={{ background: 'transparent', border: '1px solid var(--surface-border)', color: 'var(--text-muted)' }} onClick={() => setSuccess(false)}>
+            <LogOut size={18} style={{ marginRight: '10px' }}/> Sign Out
+          </button>
+        </div>
+
+        {/* Main Content Area */}
+        <div style={{ flex: 1, padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto' }}>
+           
+           {activeTab === 'dashboard' && (
+             <>
+               {!ingestionComplete ? (
+                  <IngestionPipeline onComplete={(img, data) => {
+                    setFinalImage(img);
+                    setOcrData(data);
+                    setIngestionComplete(true);
+                  }} />
+               ) : (
+                  <TemplateDesigner 
+                    croppedImage={finalImage} 
+                    ocrData={ocrData} 
+                    onBack={() => setIngestionComplete(false)} 
+                    onAddToQueue={handleAddToQueue}
+                  />
+               )}
+             </>
+           )}
+
+           {activeTab === 'queue' && (
+             <PrintQueue jobs={jobs} />
+           )}
+           
+        </div>
       </div>
     );
   }
