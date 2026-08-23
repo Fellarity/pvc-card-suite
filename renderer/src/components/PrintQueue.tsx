@@ -11,9 +11,11 @@ export interface PrintJob {
 
 interface Props {
   jobs: PrintJob[];
+  walletBalance: number;
+  onDeductCredits: (amount: number) => void;
 }
 
-export default function PrintQueue({ jobs: initialJobs }: Props) {
+export default function PrintQueue({ jobs: initialJobs, walletBalance, onDeductCredits }: Props) {
   const [printers, setPrinters] = useState<any[]>([]);
   const [selectedPrinter, setSelectedPrinter] = useState<string>('');
   const [jobs, setJobs] = useState<PrintJob[]>(initialJobs);
@@ -45,6 +47,13 @@ export default function PrintQueue({ jobs: initialJobs }: Props) {
 
   const handlePrintBatch = async () => {
     if (!selectedPrinter) return;
+    
+    const pendingJobs = jobs.filter(j => j.status === 'queued' || j.status === 'failed');
+    if (walletBalance < pendingJobs.length) {
+      alert(`Insufficient credits! You need ${pendingJobs.length} credits but only have ${walletBalance}. Please top up your wallet.`);
+      return;
+    }
+
     setIsPrinting(true);
 
     for (let i = 0; i < jobs.length; i++) {
@@ -63,6 +72,7 @@ export default function PrintQueue({ jobs: initialJobs }: Props) {
           await new Promise(r => setTimeout(r, 1000));
         }
         updatedJobs[i].status = 'completed';
+        onDeductCredits(1); // Deduct 1 credit for success
       } catch (err: any) {
         updatedJobs[i].status = 'failed';
         updatedJobs[i].error = err.message;

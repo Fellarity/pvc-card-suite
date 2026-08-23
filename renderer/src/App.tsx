@@ -3,7 +3,8 @@ import './index.css';
 import IngestionPipeline from './components/IngestionPipeline';
 import TemplateDesigner from './components/TemplateDesigner';
 import PrintQueue, { PrintJob } from './components/PrintQueue';
-import { LayoutDashboard, Printer as PrinterIcon, LogOut } from 'lucide-react';
+import BillingDashboard from './components/BillingDashboard';
+import { LayoutDashboard, Printer as PrinterIcon, LogOut, CreditCard } from 'lucide-react';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -17,8 +18,9 @@ function App() {
   const [ocrData, setOcrData] = useState<any>(null);
 
   // App State
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'queue'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'queue' | 'billing'>('dashboard');
   const [jobs, setJobs] = useState<PrintJob[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
 
   const handleAddToQueue = (htmlPayload: string) => {
     const newJob: PrintJob = {
@@ -90,6 +92,14 @@ function App() {
                 </span>
               )}
             </button>
+            <button 
+              className="btn-primary" 
+              style={{ background: activeTab === 'billing' ? 'var(--primary)' : 'transparent', textAlign: 'left', justifyContent: 'flex-start' }}
+              onClick={() => setActiveTab('billing')}
+            >
+              <CreditCard size={18} style={{ marginRight: '10px' }}/> Billing 
+              <span style={{ marginLeft: 'auto', color: 'var(--success)', fontWeight: 'bold' }}>{walletBalance}</span>
+            </button>
           </nav>
 
           <button className="btn-primary" style={{ background: 'transparent', border: '1px solid var(--surface-border)', color: 'var(--text-muted)' }} onClick={() => setSuccess(false)}>
@@ -120,7 +130,18 @@ function App() {
            )}
 
            {activeTab === 'queue' && (
-             <PrintQueue jobs={jobs} />
+             <PrintQueue 
+               jobs={jobs} 
+               walletBalance={walletBalance} 
+               onDeductCredits={(amount) => setWalletBalance(prev => prev - amount)} 
+             />
+           )}
+
+           {activeTab === 'billing' && (
+             <BillingDashboard 
+               walletBalance={walletBalance} 
+               onAddCredits={(amount) => setWalletBalance(prev => prev + amount)} 
+             />
            )}
            
         </div>

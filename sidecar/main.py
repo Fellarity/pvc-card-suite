@@ -7,6 +7,8 @@ import base64
 import pdf_service
 import cv_service
 import ocr_service
+import billing_service
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -68,6 +70,43 @@ async def extract_text_api(
     extracted_data = ocr_service.extract_text(img_bgr, doc_type)
     
     return extracted_data
+
+class LicenseRequest(BaseModel):
+    license_key: str
+
+@app.post("/api/validate-license")
+def validate_license_api(req: LicenseRequest):
+    try:
+        payload = billing_service.validate_offline_license(req.license_key)
+        return {"status": "success", "payload": payload}
+    except billing_service.LicenseError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+class OrderRequest(BaseModel):
+    amount: int
+
+@app.post("/api/create-razorpay-order")
+def create_razorpay_order_api(req: OrderRequest):
+    try:
+        order = billing_service.create_razorpay_order(req.amount)
+        return {"status": "success", "order": order}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class VerifyRequest(BaseModel):
+    payment_id: str
+    order_id: str
+    signature: str
+
+@app.post("/api/verify-razorpay-payment")
+def verify_razorpay_payment_api(req: VerifyRequest):
+    is_valid = billing_service.verify_razorpay_payment(req.payment_id, req.order_id, req.signature)
+    if is_valid:
+        # Give 10 credits per 10 INR roughly for the mock
+        credits_added = 100 
+        return {"status": "success", "credits_added": credits_added}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
