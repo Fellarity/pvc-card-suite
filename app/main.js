@@ -1,0 +1,78 @@
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
+const { spawn } = require('child_process');
+
+let sidecarProcess = null;
+
+function startSidecar() {
+  const sidecarDir = path.join(__dirname, '../sidecar');
+  // Use python3 if on linux/mac and python if on windows. For now, assuming linux/mac as per venv path
+  const pythonExecutable = path.join(sidecarDir, 'venv', 'bin', 'python');
+  
+  sidecarProcess = spawn(pythonExecutable, ['main.py'], {
+    cwd: sidecarDir,
+  });
+
+  sidecarProcess.stdout.on('data', (data) => {
+    console.log(`Sidecar: ${data}`);
+  });
+
+  sidecarProcess.stderr.on('data', (data) => {
+    console.error(`Sidecar Error: ${data}`);
+  });
+
+  // Verify IPC by polling the health endpoint
+  const checkHealth = () => {
+    require('http').get('http://127.0.0.1:8000/health', (res) => {
+      let data = '';
+      res.on('data', chunk => { data += chunk; });
+      res.on('end', () => {
+        console.log(`[IPC Spike Validation] Sidecar Health Check: ${data}`);
+      });
+    }).on('error', (err) => {
+      console.log('Sidecar not ready yet, retrying in 1s...');
+      setTimeout(checkHealth, 1000);
+    });
+  };
+  
+  setTimeout(checkHealth, 1000);
+}
+
+function createWindow() {
+  const mainWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+    }
+  });
+
+  // In dev mode, load the Vite dev server
+  mainWindow.loadURL('http://localhost:5173');
+  
+  // In production, load the built React app
+  // mainWindow.loadFile(path.join(__dirname, '../renderer/dist/index.html'));
+  
+  mainWindow.webContents.openDevTools();
+}
+
+app.whenReady().then(() => {
+  startSidecar();
+  createWindow();
+
+  app.on('activate', function () {
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+  });
+});
+
+app.on('window-all-closed', function () {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('will-quit', () => {
+  if (sidecarProcess) {
+    sidecarProcess.kill();
+  }
+});
