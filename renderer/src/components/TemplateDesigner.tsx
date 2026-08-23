@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import aadhaarTemplate from '../templates/aadhaar.json';
 import panTemplate from '../templates/pan.json';
-import { CardTemplate } from '../../../shared/template_schema';
-import { Save, Printer, Edit3 } from 'lucide-react';
+import { type CardTemplate } from '../../../shared/template_schema';
+import { Save, Edit3 } from 'lucide-react';
 
 interface Props {
   croppedImage: string | null;

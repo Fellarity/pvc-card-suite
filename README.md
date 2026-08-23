@@ -18,6 +18,8 @@ The project has successfully completed the following development phases:
 *   **Phase 3: Template Engine** - Developed a data-driven HTML/CSS absolute positioning engine. Integrated PyTesseract for automated field extraction (OCR) and mapped extracted data to structured JSON templates (e.g., Aadhaar, PAN).
 *   **Phase 4: Printing** - Engineered a cross-platform (Linux/Windows) printing abstraction layer utilizing Electron's headless `BrowserWindow` to interface directly with OS print spoolers (CUPS/Windows Print Spooler), including support for dual-sided printing via CSS page breaks. Built a comprehensive Batch Print Queue UI.
 *   **Phase 5: Licensing & Billing** - Implemented an offline RSA cryptographic activation system to support air-gapped environments. Developed the wallet ledger to enforce print credit deductions per hardware print job, alongside foundational API hooks for Razorpay online top-ups.
+*   **Phase 6: Compliance & Hardening** - Integrated zero-logging Fast API middleware with strict HTTP Cache-Control headers to ensure PII (Aadhaar/PAN) is never written to disk. Added a comprehensive code obfuscation pipeline using PyArmor and Javascript-Obfuscator.
+*   **Phase 7: Beta & Launch** - Configured a robust CI/CD master script (`package.sh`) integrating PyInstaller and Electron Builder to compile the hybrid microservices into a single standalone `.exe` (or `.AppImage`) installer, abstracting away Python dependencies for end-users.
 
 ## Running the Application
 
@@ -65,5 +67,18 @@ npm install
 npm start
 ```
 
-### Production Build
-To package the application for distribution, you will need to utilize tools like `electron-builder` or `pyinstaller` to bundle the Python executable alongside the Electron application. Packaging scripts are slated for the Beta & Launch phase.
+### Production Build (Packaging)
+To package the application into a single standalone installer (e.g. `.exe` on Windows or `.AppImage` on Linux), run the unified packaging script from the root directory:
+
+```bash
+./package.sh
+```
+
+This script will automatically:
+1. Bundle the Python sidecar and OpenCV dependencies into a compiled binary using `pyinstaller`.
+2. Build the production React assets.
+3. Bundle the Electron application via `electron-builder`.
+
+The final distributable installer will be generated in `app/dist/`.
+
+> **Note**: Packaging tools are not cross-compilers. To generate a Windows `.exe`, you must clone this repository and run `./package.sh` (or a `.bat` equivalent) natively on a Windows machine.

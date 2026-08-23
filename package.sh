@@ -28,6 +28,10 @@ npm install
 npm run build
 cd ..
 
+# Copy renderer dist into app so electron-builder can pack it easily
+rm -rf app/renderer_dist
+cp -r renderer/dist app/renderer_dist
+
 # 3. Package Electron App
 echo "[3/3] Packaging Electron Application..."
 cd app

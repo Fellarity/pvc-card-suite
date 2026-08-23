@@ -25,7 +25,7 @@
       "main.js",
       "preload.js",
       "printer_service.js",
-      "../renderer/dist/**/*"
+      "renderer_dist/**/*"
     ],
     "extraResources": [
       {

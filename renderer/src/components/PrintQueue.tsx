@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Printer, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 export interface PrintJob {

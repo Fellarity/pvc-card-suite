@@ -10,8 +10,9 @@ function startSidecar() {
   
   if (app.isPackaged) {
     // In production, the sidecar is an executable inside the resources directory
+    // PyInstaller --onedir creates a 'main' directory, and the executable is inside it
     const sidecarExecutable = process.platform === 'win32' ? 'main.exe' : 'main';
-    const sidecarPath = path.join(process.resourcesPath, 'sidecar', sidecarExecutable);
+    const sidecarPath = path.join(process.resourcesPath, 'sidecar', 'main', sidecarExecutable);
     
     console.log('Starting packaged sidecar from:', sidecarPath);
     sidecarProcess = spawn(sidecarPath, [], {
@@ -67,11 +68,13 @@ function createWindow() {
     }
   });
 
-  // In dev mode, load the Vite dev server
-  mainWindow.loadURL('http://localhost:5173');
-  
-  // In production, load the built React app
-  // mainWindow.loadFile(path.join(__dirname, '../renderer/dist/index.html'));
+  if (app.isPackaged) {
+    // In production, load the built React app
+    mainWindow.loadFile(path.join(__dirname, 'renderer_dist', 'index.html'));
+  } else {
+    // In dev mode, load the Vite dev server
+    mainWindow.loadURL('http://localhost:5173');
+  }
   
   mainWindow.webContents.openDevTools();
 

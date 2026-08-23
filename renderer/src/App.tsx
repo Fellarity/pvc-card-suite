@@ -1,8 +1,8 @@
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import './index.css';
 import IngestionPipeline from './components/IngestionPipeline';
 import TemplateDesigner from './components/TemplateDesigner';
-import PrintQueue, { PrintJob } from './components/PrintQueue';
+import PrintQueue, { type PrintJob } from './components/PrintQueue';
 import BillingDashboard from './components/BillingDashboard';
 import { LayoutDashboard, Printer as PrinterIcon, LogOut, CreditCard } from 'lucide-react';
 
