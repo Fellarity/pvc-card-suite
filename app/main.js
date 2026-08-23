@@ -6,13 +6,30 @@ const { getPrinters, printCard } = require('./printer_service');
 let sidecarProcess = null;
 
 function startSidecar() {
-  const sidecarDir = path.join(__dirname, '../sidecar');
-  // Use python3 if on linux/mac and python if on windows. For now, assuming linux/mac as per venv path
-  const pythonExecutable = path.join(sidecarDir, 'venv', 'bin', 'python');
+  const sidecarPort = 8000;
   
-  sidecarProcess = spawn(pythonExecutable, ['main.py'], {
-    cwd: sidecarDir,
-  });
+  if (app.isPackaged) {
+    // In production, the sidecar is an executable inside the resources directory
+    const sidecarExecutable = process.platform === 'win32' ? 'main.exe' : 'main';
+    const sidecarPath = path.join(process.resourcesPath, 'sidecar', sidecarExecutable);
+    
+    console.log('Starting packaged sidecar from:', sidecarPath);
+    sidecarProcess = spawn(sidecarPath, [], {
+      detached: false
+    });
+  } else {
+    // In development, spawn the python script
+    const sidecarDir = path.join(__dirname, '..', 'sidecar');
+    const pythonExecutable = process.platform === 'win32' 
+      ? path.join(sidecarDir, 'venv', 'Scripts', 'python.exe')
+      : path.join(sidecarDir, 'venv', 'bin', 'python');
+      
+    console.log('Starting dev sidecar from:', pythonExecutable);
+    sidecarProcess = spawn(pythonExecutable, ['main.py'], {
+      cwd: sidecarDir,
+      detached: false
+    });
+  }
 
   sidecarProcess.stdout.on('data', (data) => {
     console.log(`Sidecar: ${data}`);

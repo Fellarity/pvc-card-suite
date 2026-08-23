@@ -1,16 +1,44 @@
 {
-  "name": "app",
+  "name": "pvc-card-suite",
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "keywords": [],
-  "author": "",
+  "author": "Fellarity",
   "license": "ISC",
-  "description": "",
+  "description": "PVC Card Creation Suite",
   "devDependencies": {
-    "electron": "^41.7.1"
+    "electron": "^41.7.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.fellarity.pvccardsuite",
+    "productName": "PVC Card Suite",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "printer_service.js",
+      "../renderer/dist/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../sidecar/dist_bin",
+        "to": "sidecar",
+        "filter": ["**/*"]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }
