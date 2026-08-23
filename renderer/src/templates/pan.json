@@ -1,0 +1,69 @@
+{
+  "id": "pan_card",
+  "name": "PAN Card",
+  "width": 1011,
+  "height": 638,
+  "backgroundArt": "/assets/pan_bg.jpg",
+  "textFields": [
+    {
+      "id": "name",
+      "label": "Name",
+      "x": 300,
+      "y": 200,
+      "fontSize": 26,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    },
+    {
+      "id": "father_name",
+      "label": "Father's Name",
+      "x": 300,
+      "y": 250,
+      "fontSize": 22,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    },
+    {
+      "id": "dob",
+      "label": "DOB",
+      "x": 300,
+      "y": 300,
+      "fontSize": 20,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    },
+    {
+      "id": "id_number",
+      "label": "Permanent Account Number",
+      "x": 300,
+      "y": 400,
+      "fontSize": 40,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    }
+  ],
+  "imageFields": [
+    {
+      "id": "photo",
+      "label": "Photo",
+      "x": 40,
+      "y": 200,
+      "width": 200,
+      "height": 250,
+      "isCropBox": true
+    },
+    {
+      "id": "signature",
+      "label": "Signature",
+      "x": 40,
+      "y": 480,
+      "width": 200,
+      "height": 50,
+      "isCropBox": false
+    }
+  ]
+}

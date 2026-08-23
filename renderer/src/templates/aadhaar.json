@@ -1,0 +1,50 @@
+{
+  "id": "aadhaar_front",
+  "name": "Aadhaar Front",
+  "width": 1011,
+  "height": 638,
+  "backgroundArt": "/assets/aadhaar_bg.jpg",
+  "textFields": [
+    {
+      "id": "name",
+      "label": "Name",
+      "x": 350,
+      "y": 150,
+      "fontSize": 24,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    },
+    {
+      "id": "dob",
+      "label": "DOB",
+      "x": 350,
+      "y": 200,
+      "fontSize": 20,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": ""
+    },
+    {
+      "id": "id_number",
+      "label": "Aadhaar Number",
+      "x": 350,
+      "y": 450,
+      "fontSize": 48,
+      "fontFamily": "Inter",
+      "color": "#000000",
+      "value": "0000 0000 0000"
+    }
+  ],
+  "imageFields": [
+    {
+      "id": "photo",
+      "label": "Photo",
+      "x": 50,
+      "y": 150,
+      "width": 250,
+      "height": 300,
+      "isCropBox": true
+    }
+  ]
+}

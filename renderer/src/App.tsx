@@ -1,5 +1,7 @@
 import { useState, FormEvent } from 'react';
 import './index.css';
+import IngestionPipeline from './components/IngestionPipeline';
+import TemplateDesigner from './components/TemplateDesigner';
 
 function App() {
   const [email, setEmail] = useState('');
@@ -7,6 +9,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  
+  const [ingestionComplete, setIngestionComplete] = useState(false);
+  const [finalImage, setFinalImage] = useState<string | null>(null);
+  const [ocrData, setOcrData] = useState<any>(null);
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -40,12 +46,27 @@ function App() {
 
   if (success) {
     return (
-      <div className="glass-panel" style={{ textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--success)' }}>Welcome!</h1>
-        <p style={{ marginTop: '10px' }}>You have successfully logged in to the PVC Card Creation Suite.</p>
-        <button className="btn-primary" style={{ marginTop: '20px' }} onClick={() => setSuccess(false)}>
-          Sign Out
-        </button>
+      <div style={{ width: '100%', padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '40px' }}>
+         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1200px', alignItems: 'center' }}>
+            <h1 style={{ fontSize: '24px' }}>PVC Card Suite Dashboard</h1>
+            <button className="btn-primary" style={{ width: 'auto', padding: '8px 16px' }} onClick={() => setSuccess(false)}>
+              Sign Out
+            </button>
+         </div>
+         
+         {!ingestionComplete ? (
+            <IngestionPipeline onComplete={(img, data) => {
+              setFinalImage(img);
+              setOcrData(data);
+              setIngestionComplete(true);
+            }} />
+         ) : (
+            <TemplateDesigner 
+              croppedImage={finalImage} 
+              ocrData={ocrData} 
+              onBack={() => setIngestionComplete(false)} 
+            />
+         )}
       </div>
     );
   }
